@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0f4c5c;
+  --color-accent: #e36414;
+  --color-surface: #ffffff;
+  --color-app-bg: #f8fafc;
+}
+
+@layer base {
+  body {
+    @apply bg-app-bg text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-md border border-white/20;
+}
+
+.card-shadow {
+  @apply shadow-[0_4px_20px_rgba(0,0,0,0.05)];
+}
