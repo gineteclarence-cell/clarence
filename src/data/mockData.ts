@@ -1,5 +1,40 @@
-import { Transaction, InventoryItem, StaffMember, AttendanceLog, MenuItem } from '../types';
-import { subDays, startOfMonth, format, isAfter } from 'date-fns';
+import { Transaction, InventoryItem, StaffMember, AttendanceLog, MenuItem, AppNotification } from '../types';
+import { subDays, startOfMonth, format, isAfter, subHours, subMinutes } from 'date-fns';
+
+export const NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'n1',
+    title: 'Low Stock Alert',
+    message: 'Milk Tea stock is below minimum level (15 units remaining).',
+    time: subMinutes(new Date(), 10).toISOString(),
+    type: 'warning',
+    read: false,
+  },
+  {
+    id: 'n2',
+    title: 'New Staff Task',
+    message: 'Alice Santos just completed preparing 50 batches of milk tea.',
+    time: subHours(new Date(), 2).toISOString(),
+    type: 'success',
+    read: false,
+  },
+  {
+    id: 'n3',
+    title: 'Branch 2 Sync',
+    message: 'Weekly sales data successfully synced to the central server.',
+    time: subHours(new Date(), 5).toISOString(),
+    type: 'info',
+    read: true,
+  },
+  {
+    id: 'n4',
+    title: 'System Update',
+    message: 'MABI v1.4.2 is now live with improved offline sync.',
+    time: subDays(new Date(), 1).toISOString(),
+    type: 'info',
+    read: true,
+  }
+];
 
 export const MENU_ITEMS: MenuItem[] = [
   { id: 'm1', name: 'Classic Milk Tea', price: 85, category: 'Beverage', image: 'https://picsum.photos/seed/milktea/200/200' },
@@ -19,12 +54,12 @@ export const INVENTORY: InventoryItem[] = [
 ];
 
 export const STAFF: StaffMember[] = [
-  { id: 'st-01', name: 'Alice Santos', branch: 'Branch 1', active: true, transactionsProcessed: 124, attendanceLogs: [] },
-  { id: 'st-02', name: 'Bob Reyes', branch: 'Branch 1', active: false, transactionsProcessed: 89, attendanceLogs: [] },
-  { id: 'st-03', name: 'Charlie Cruz', branch: 'Branch 2', active: true, transactionsProcessed: 156, attendanceLogs: [] },
-  { id: 'st-04', name: 'Diana Lim', branch: 'Branch 2', active: true, transactionsProcessed: 42, attendanceLogs: [] },
-  { id: 'st-05', name: 'Elena Gomez', branch: 'Branch 1', active: false, transactionsProcessed: 12, attendanceLogs: [] },
-  { id: 'st-06', name: 'Fred Dizon', branch: 'Branch 2', active: false, transactionsProcessed: 67, attendanceLogs: [] },
+  { id: 'st-01', name: 'Alice Santos', branch: 'Branch 1', accessCode: '101001', active: true, transactionsProcessed: 124, attendanceLogs: [] },
+  { id: 'st-02', name: 'Bob Reyes', branch: 'Branch 1', accessCode: '101002', active: false, transactionsProcessed: 89, attendanceLogs: [] },
+  { id: 'st-03', name: 'Charlie Cruz', branch: 'Branch 2', accessCode: '202003', active: true, transactionsProcessed: 156, attendanceLogs: [] },
+  { id: 'st-04', name: 'Diana Lim', branch: 'Branch 2', accessCode: '202004', active: true, transactionsProcessed: 42, attendanceLogs: [] },
+  { id: 'st-05', name: 'Elena Gomez', branch: 'Branch 1', accessCode: '101005', active: false, transactionsProcessed: 12, attendanceLogs: [] },
+  { id: 'st-06', name: 'Fred Dizon', branch: 'Branch 2', accessCode: '202006', active: false, transactionsProcessed: 67, attendanceLogs: [] },
 ];
 
 // Generate Attendance Logs

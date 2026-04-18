@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Branch, User } from './types';
+import { cn } from './lib/utils';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import Dashboard from './components/Dashboard';
 import Sales from './components/Sales';
 import Inventory from './components/Inventory';
 import Staff from './components/Staff';
+import Category from './components/Category';
+import Help from './components/Help';
 import StaffDashboard from './components/StaffDashboard';
 import StaffPOS from './components/StaffPOS';
-import TestCases from './components/TestCases';
+import StaffInventory from './components/StaffInventory';
 import LandingPage from './components/LandingPage';
 import { useOffline } from './hooks/useOffline';
 import { motion, AnimatePresence } from 'motion/react';
@@ -17,6 +20,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedBranch, setSelectedBranch] = useState<Branch>('All');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isOffline, toggleOffline } = useOffline();
   
   // Persistent Auth State
@@ -56,9 +60,10 @@ export default function App() {
       switch (activeTab) {
         case 'dashboard': return <Dashboard branch={selectedBranch} />;
         case 'sales': return <Sales branch={selectedBranch} />;
-        case 'inventory': return <Inventory isOffline={isOffline} />;
+        case 'inventory': return <Inventory isOffline={isOffline} branch={selectedBranch} />;
         case 'staff': return <Staff branch={selectedBranch} />;
-        case 'test-cases': return <TestCases />;
+        case 'category': return <Category branch={selectedBranch} />;
+        case 'help': return <Help />;
         default: return <Dashboard branch={selectedBranch} />;
       }
     }
@@ -67,33 +72,44 @@ export default function App() {
     switch (activeTab) {
       case 'dashboard': 
       case 'attendance':
-        return <StaffDashboard user={user} isOffline={isOffline} onToggleOffline={toggleOffline} />;
+        return <StaffDashboard user={user} isOffline={isOffline} onToggleOffline={toggleOffline} activeTab={activeTab} />;
       case 'sales':
         return <StaffPOS user={user} />;
-      case 'test-cases': return <TestCases />;
+      case 'inventory':
+        return <StaffInventory user={user} />;
+      case 'category':
+        return <Category branch={user.branch} />;
+      case 'help':
+        return <Help />;
       default: return <StaffDashboard user={user} isOffline={isOffline} onToggleOffline={toggleOffline} />;
     }
   };
 
   return (
-    <div className="flex bg-app-bg min-h-screen font-sans">
+    <div className="flex bg-app-bg min-h-screen font-sans overflow-x-hidden">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onLogout={handleLogout} 
         role={user.role}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       
-      <main className="flex-1 ml-64 min-h-screen flex flex-col">
+      <main className={cn(
+        "flex-1 min-h-screen flex flex-col transition-all duration-300",
+        "lg:ml-64"
+      )}>
         <TopBar 
           user={user} 
           selectedBranch={selectedBranch} 
           setSelectedBranch={setSelectedBranch} 
           isOffline={isOffline}
           onToggleOffline={toggleOffline}
+          onMenuClick={() => setSidebarOpen(true)}
         />
         
-        <div className="p-8 flex-1">
+        <div className="p-4 lg:p-8 flex-1">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab + selectedBranch}

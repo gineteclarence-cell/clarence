@@ -34,10 +34,22 @@ export interface InventoryItem {
   category: string;
 }
 
+export interface InventoryLog {
+  id: string;
+  itemId: string;
+  itemName: string;
+  previousStock: number;
+  newStock: number;
+  staffName: string;
+  time: string;
+  branch: string;
+}
+
 export interface StaffMember {
   id: string;
   name: string;
   branch: Exclude<Branch, 'All'>;
+  accessCode: string;
   active: boolean;
   transactionsProcessed: number;
   attendanceLogs: AttendanceLog[];
@@ -53,6 +65,15 @@ export interface AttendanceLog {
   date: string;
   task?: string;
   isPendingSync?: boolean;
+}
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  read: boolean;
 }
 
 export interface SalesKPI {

@@ -19,11 +19,11 @@ const Sales: React.FC<SalesProps> = ({ branch }) => {
   );
 
   const simulateReport = (type: string) => {
-    alert(`Generating ${type} Sales Report for ${branch}... PDF format. (SIMULATED)`);
+    // Logic for generating Sales Report would go here
   };
 
   const simulateNotification = () => {
-    alert("Daily summary sent to owner@mabi.com (SIMULATED)");
+    // Logic for sending summary would go here
   };
 
   return (
@@ -50,25 +50,31 @@ const Sales: React.FC<SalesProps> = ({ branch }) => {
           </button>
           <button 
             onClick={simulateNotification}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-black text-primary rounded-xl text-sm font-black hover:brightness-110 transition-all shadow-sm"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4 text-primary" />
             Send Summary
           </button>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 card-shadow overflow-hidden">
+        <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-white">
+          <div>
+            <h3 className="font-black text-gray-900 tracking-tight text-xl">Sales Tracking Record</h3>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Consolidated transaction history across branches</p>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Transaction ID</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Staff Name</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Branch</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Time</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Transaction ID</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Staff Name</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Branch</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -78,30 +84,30 @@ const Sales: React.FC<SalesProps> = ({ branch }) => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.02 }}
-                  className="hover:bg-gray-50/50 transition-colors"
+                  className="hover:bg-primary/5 transition-colors"
                 >
-                  <td className="px-6 py-4 font-mono text-sm text-primary font-bold">{tx.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{tx.staffName}</td>
+                  <td className="px-6 py-4 font-mono text-xs text-black font-black">{tx.id}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-gray-700">{tx.staffName}</td>
                   <td className="px-6 py-4 text-sm">
                     <span className={cn(
-                      "px-2 py-1 rounded-md text-[10px] font-bold uppercase",
-                      tx.branch === 'Branch 1' ? "bg-teal-50 text-teal-700" : "bg-purple-50 text-purple-700"
+                      "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border",
+                      tx.branch === 'Branch 1' ? "bg-black text-primary border-black" : "bg-primary text-black border-black/10"
                     )}>
                       {tx.branch}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900">{formatCurrency(tx.amount)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{formatDate(tx.time)}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <button className="text-primary hover:underline font-medium">Details</button>
+                  <td className="px-6 py-4 text-sm font-black text-gray-900">{formatCurrency(tx.amount)}</td>
+                  <td className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase">{formatDate(tx.time)}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-black hover:text-primary transition-colors font-black text-xs underline underline-offset-4 decoration-primary decoration-2">View Receipt</button>
                   </td>
                 </motion.tr>
               ))}
             </tbody>
           </table>
           {filteredTransactions.length === 0 && (
-            <div className="p-12 text-center text-gray-500">
-              No transactions found matching your search.
+            <div className="p-12 text-center text-gray-500 italic text-sm">
+              No sales records found matching your filters.
             </div>
           )}
         </div>

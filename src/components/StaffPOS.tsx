@@ -23,10 +23,12 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
   const [lastTx, setLastTx] = useState<Transaction | null>(null);
   const [personalTransactions, setPersonalTransactions] = useState<Transaction[]>([]);
   const [view, setView] = useState<'pos' | 'history' | 'manage'>('pos');
+  const [showMobileCart, setShowMobileCart] = useState(false);
   
   // Menu Management
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [newProduct, setNewProduct] = useState({ name: '', price: '', category: 'Beverage', image: '' });
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const savedSales = localStorage.getItem(`sales_${user.id}`);
@@ -35,7 +37,30 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
     const savedMenu = localStorage.getItem('custom_menu_items');
     const customItems = savedMenu ? JSON.parse(savedMenu) : [];
     setMenuItems([...INITIAL_MENU_ITEMS, ...customItems]);
+
+    const handleViewChange = (e: any) => {
+      setView(e.detail);
+    };
+    window.addEventListener('posView', handleViewChange);
+    return () => window.removeEventListener('posView', handleViewChange);
   }, [user.id]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024 * 2) { // 2MB limit
+      return;
+    }
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewProduct({ ...newProduct, image: reader.result as string });
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +79,6 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
     localStorage.setItem('custom_menu_items', JSON.stringify(updatedCustom));
     setMenuItems([...INITIAL_MENU_ITEMS, ...updatedCustom]);
     setNewProduct({ name: '', price: '', category: 'Beverage', image: '' });
-    alert("New product added to menu!");
     setView('pos');
   };
 
@@ -120,6 +144,98 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] space-y-6">
+      {/* Mobile Cart Trigger */}
+      {view === 'pos' && cart.length > 0 && (
+        <div className="lg:hidden fixed bottom-6 right-6 z-50">
+          <motion.button 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            onClick={() => setShowMobileCart(true)}
+            className="w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center relative border-4 border-white"
+          >
+            <ShoppingCart className="w-6 h-6" />
+            <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white">
+              {cart.reduce((acc, i) => acc + i.quantity, 0)}
+            </span>
+          </motion.button>
+        </div>
+      )}
+
+      {/* Mobile Cart Overlay */}
+      <AnimatePresence>
+        {showMobileCart && (
+          <div className="fixed inset-0 z-[100] lg:hidden">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileCart(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute bottom-0 inset-x-0 bg-white rounded-t-[3rem] p-8 max-h-[85vh] flex flex-col shadow-2xl"
+            >
+              <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-8" />
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="font-black text-gray-900 flex items-center gap-3 uppercase tracking-widest text-sm">
+                  <ShoppingCart className="w-5 h-5 text-primary" />
+                  Your Order
+                </h3>
+                <button 
+                  onClick={clearCart}
+                  className="text-xs font-bold text-gray-400 hover:text-red-500"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto min-h-0 space-y-4 mb-8 pr-2">
+                {cart.map((item) => (
+                  <div key={item.menuItem.id} className="flex items-center gap-4 bg-gray-50/50 p-4 rounded-2xl group">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
+                      <img src={item.menuItem.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-gray-900 truncate">{item.menuItem.name}</p>
+                      <p className="text-xs font-black text-accent mt-0.5">₱{(item.menuItem.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white p-1 rounded-lg border border-gray-100">
+                      <button onClick={() => removeFromCart(item.menuItem.id)} className="w-6 h-6 flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="font-black text-xs min-w-[1rem] text-center">{item.quantity}</span>
+                      <button onClick={() => addToCart(item.menuItem)} className="w-6 h-6 flex items-center justify-center hover:bg-green-50 text-gray-400 hover:text-green-500 transition-colors">
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-4 pt-6 border-t border-gray-100">
+                <div className="flex justify-between text-lg font-black text-gray-900">
+                  <span>Total</span>
+                  <span className="text-accent">₱{total.toFixed(2)}</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    handleCheckout();
+                    setShowMobileCart(false);
+                  }}
+                  className="w-full py-5 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20"
+                >
+                  CONFIRM & PAY
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Tab Switcher */}
       <div className="flex flex-wrap gap-4 border-b border-gray-100 pb-4">
         <button 
@@ -129,7 +245,7 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
             view === 'pos' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:text-primary"
           )}
         >
-          Point of Sale
+          Sales
         </button>
         <button 
           onClick={() => setView('history')}
@@ -405,18 +521,49 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Product Image URL (Optional)</label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Product Image</label>
+                <div className="flex flex-col gap-4">
+                  <div 
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                    className={cn(
+                      "w-full h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all overflow-hidden relative group",
+                      newProduct.image ? "border-accent/50 bg-accent/5" : "border-gray-200 hover:border-accent/40 bg-gray-50"
+                    )}
+                  >
+                    {newProduct.image ? (
+                      <>
+                        <img src={newProduct.image} className="w-full h-full object-cover" alt="Selected" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Plus className="w-8 h-8 text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                          isUploading ? "bg-accent text-white animate-spin" : "bg-white text-gray-400"
+                        )}>
+                          <ImageIcon className="w-5 h-5" />
+                        </div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                          {isUploading ? "Reading File..." : "Click to Upload Photo"}
+                        </p>
+                      </>
+                    )}
+                  </div>
                   <input 
-                    type="url"
-                    placeholder="https://images.unsplash.com/..."
-                    value={newProduct.image}
-                    onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-accent/10 focus:border-accent/20 outline-none transition-all font-bold"
+                    id="image-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
                   />
+                  {!newProduct.image && (
+                    <p className="text-[10px] text-gray-400 font-medium italic">
+                      No photo? We'll auto-generate a placeholder based on the product name.
+                    </p>
+                  )}
                 </div>
-                <p className="text-[10px] text-gray-400 font-medium italic">Leave blank to auto-generate a placeholder image based on name.</p>
               </div>
 
               <button 

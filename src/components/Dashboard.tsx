@@ -18,18 +18,10 @@ const Dashboard: React.FC<DashboardProps> = ({ branch }) => {
   const pieData = getProductPerformance(branch);
   const staffData = getStaffKPIs(branch);
   
-  const COLORS = ['#0f4c5c', '#e36414', '#55a630', '#ffb703', '#219ebc'];
+  const COLORS = ['#ffde3b', '#000000', '#333333', '#666666', '#999999'];
 
   useEffect(() => {
-    // Simulate detecting a sales anomaly
-    const timer = setTimeout(() => {
-      const anomaly = Math.random() > 0.7;
-      if (anomaly) {
-        console.warn("System Alert: Sales anomaly detected in Branch 2 - Unusually high transaction volume.");
-        // We could use a toast library here, but for now we'll just log or use a local state.
-      }
-    }, 3000);
-    return () => clearTimeout(timer);
+    // Analytics initialization could go here
   }, []);
 
   const kpis = [
@@ -87,10 +79,10 @@ const Dashboard: React.FC<DashboardProps> = ({ branch }) => {
                 <Line 
                   type="monotone" 
                   dataKey="sales" 
-                  stroke="#0f4c5c" 
-                  strokeWidth={3} 
-                  dot={{ r: 4, fill: '#0f4c5c', strokeWidth: 2, stroke: '#fff' }} 
-                  activeDot={{ r: 6 }} 
+                  stroke="#ffde3b" 
+                  strokeWidth={4} 
+                  dot={{ r: 4, fill: '#000', strokeWidth: 2, stroke: '#ffde3b' }} 
+                  activeDot={{ r: 8 }} 
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -133,7 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({ branch }) => {
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
               <Tooltip cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="transactions" fill="#e36414" radius={[4, 4, 0, 0]} barSize={40} />
+              <Bar dataKey="transactions" fill="#ffde3b" radius={[4, 4, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>

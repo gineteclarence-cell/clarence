@@ -1,6 +1,6 @@
 {
   "name": "Mabi Sip & Bites Centralized Monitoring System",
-  "description": "A centralized branch monitoring and management system for Mabi Sip & Bites, featuring real-time KPIs, sales tracking, inventory management, and staff performance analytics.",
+  "description": "A fully responsive centralized monitoring system for Mabi Sip & Bites, optimized for PC, Laptops, Android, and iPhone. Monitor real-time KPIs, sales, and inventory from any device.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }
