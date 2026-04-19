@@ -1,4 +1,4 @@
-import { Transaction, InventoryItem, StaffMember, AttendanceLog, MenuItem, AppNotification } from '../types';
+import { Transaction, InventoryItem, StaffMember, AttendanceLog, MenuItem, AppNotification, SalesKPI, InventoryRequest } from '../types';
 import { subDays, startOfMonth, format, isAfter, subHours, subMinutes } from 'date-fns';
 
 export const NOTIFICATIONS: AppNotification[] = [
@@ -96,6 +96,42 @@ for (let i = 0; i < 50; i++) {
   });
 }
 
+export const MOCK_REQUESTS: InventoryRequest[] = [
+  {
+    id: 'REQ-001',
+    itemId: '1',
+    itemName: 'Milk Tea',
+    quantity: 50,
+    unit: 'Liters',
+    branch: 'Branch 1',
+    staffName: 'Alice Santos',
+    status: 'pending',
+    time: subHours(new Date(), 2).toISOString()
+  },
+  {
+    id: 'REQ-002',
+    itemId: '3',
+    itemName: 'Siomai',
+    quantity: 10,
+    unit: 'Packs',
+    branch: 'Branch 2',
+    staffName: 'Charlie Cruz',
+    status: 'pending',
+    time: subHours(new Date(), 5).toISOString()
+  },
+  {
+    id: 'REQ-003',
+    itemId: '2',
+    itemName: 'Fries',
+    quantity: 20,
+    unit: 'Kg',
+    branch: 'Branch 1',
+    staffName: 'Bob Reyes',
+    status: 'approved',
+    time: subDays(new Date(), 1).toISOString()
+  }
+];
+
 export const getSalesTrends = (branch: string) => {
   const days = Array.from({ length: 7 }, (_, i) => subDays(new Date(), 6 - i));
   return days.map(day => {
@@ -124,4 +160,19 @@ export const getStaffKPIs = (branch: string) => {
     name: s.name,
     transactions: s.transactionsProcessed,
   }));
+};
+
+export const getKpis = (branch: string): SalesKPI => {
+  const branchStaff = STAFF.filter(s => branch === 'All' || s.branch === branch);
+  const branchTx = TRANSACTIONS.filter(t => branch === 'All' || t.branch === branch);
+  const branchInventory = INVENTORY; // Usually this would be filtered too
+
+  return {
+    todaySales: branchTx.filter(t => format(new Date(t.time), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'))
+      .reduce((acc, t) => acc + t.amount, 0),
+    lowStockCount: branchInventory.filter(i => i.stock <= i.minStock).length,
+    activeStaffCount: branchStaff.filter(s => s.active).length,
+    totalRevenueMTD: branchTx.filter(t => isAfter(new Date(t.time), startOfMonth(new Date())))
+      .reduce((acc, t) => acc + t.amount, 0)
+  };
 };

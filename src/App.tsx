@@ -27,7 +27,23 @@ export default function App() {
   useEffect(() => {
     const savedUser = localStorage.getItem('mabi_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      
+      // Safety Check: If user is staff, verify they still exist in the master staff list
+      if (parsedUser.role === 'Staff') {
+        const masterStaff = localStorage.getItem('mabi_system_staff');
+        if (masterStaff) {
+          const staffList = JSON.parse(masterStaff);
+          const exists = staffList.some((s: any) => s.id === parsedUser.id);
+          if (!exists) {
+            // Staff was deleted by owner, force logout
+            handleLogout();
+            return;
+          }
+        }
+      }
+      
+      setUser(parsedUser);
     }
 
     const handleTabChange = (e: any) => {

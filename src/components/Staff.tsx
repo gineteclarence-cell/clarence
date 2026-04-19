@@ -10,6 +10,7 @@ const Staff: React.FC<{ branch: Branch }> = ({ branch }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newBranch, setNewBranch] = useState<Exclude<Branch, 'All'>>('Branch 1');
+  const [confirmDelete, setConfirmDelete] = useState<StaffMember | null>(null);
 
   useEffect(() => {
     const loadStaff = () => {
@@ -67,16 +68,70 @@ const Staff: React.FC<{ branch: Branch }> = ({ branch }) => {
   };
 
   const handleDeleteStaff = (id: string) => {
-    if (window.confirm("Are you sure you want to remove this staff member? All their data will be deleted.")) {
-      const updated = staffList.filter(s => s.id !== id);
-      saveStaff(updated);
+    const staff = staffList.find(s => s.id === id);
+    if (staff) {
+      setConfirmDelete(staff);
     }
+  };
+
+  const executeDelete = () => {
+    if (!confirmDelete) return;
+    const updated = staffList.filter(s => s.id !== confirmDelete.id);
+    saveStaff(updated);
+    setConfirmDelete(null);
   };
 
   const filteredStaff = staffList.filter(s => branch === 'All' || s.branch === branch);
 
   return (
     <div className="space-y-8">
+      <AnimatePresence>
+        {confirmDelete && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setConfirmDelete(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-8"
+            >
+              <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <Trash2 className="w-8 h-8" />
+              </div>
+              
+              <div className="text-center mb-8">
+                <h3 className="text-xl font-black text-gray-900 uppercase italic mb-2">Terminate Access?</h3>
+                <p className="text-sm text-gray-500 font-medium">
+                  Are you sure you want to remove <span className="text-black font-black">{confirmDelete.name}</span>? 
+                  Access to POS and Inventory will be <span className="text-red-600 font-bold underline">revoked immediately</span>.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setConfirmDelete(null)}
+                  className="flex-1 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-xs uppercase hover:bg-gray-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={executeDelete}
+                  className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase hover:brightness-110 shadow-xl shadow-red-600/20 transition-all"
+                >
+                  Delete Access
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 card-shadow">
@@ -113,8 +168,14 @@ const Staff: React.FC<{ branch: Branch }> = ({ branch }) => {
           <div className="bg-white rounded-2xl border border-gray-100 card-shadow overflow-hidden">
             <div className="p-6 border-b border-gray-50 flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-gray-900">Attendance & Performance</h3>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Managing {filteredStaff.length} staff members</p>
+                <h3 className="font-bold text-gray-900">
+                  {branch === 'All' ? 'Attendance & Performance' : `${branch} Staff Performance`}
+                </h3>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">
+                  {branch === 'All' 
+                    ? `Managing all ${filteredStaff.length} branch personnel` 
+                    : `Managing ${filteredStaff.length} members at ${branch}`}
+                </p>
               </div>
               <button 
                 onClick={() => setIsAdding(true)}
@@ -173,13 +234,16 @@ const Staff: React.FC<{ branch: Branch }> = ({ branch }) => {
                           </code>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button 
-                            onClick={() => handleDeleteStaff(staff.id)}
-                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                            title="Remove Staff"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex justify-end items-center gap-2">
+                            <button 
+                              onClick={() => handleDeleteStaff(staff.id)}
+                              className="group/del p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all flex items-center gap-2"
+                              title="Terminate Access"
+                            >
+                              <span className="text-[10px] font-black uppercase tracking-tighter opacity-0 group-hover/del:opacity-100 transition-opacity">Delet / Revoke</span>
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </motion.tr>
                     ))}

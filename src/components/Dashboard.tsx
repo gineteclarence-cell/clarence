@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { TrendingUp, AlertTriangle, Users, Wallet, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { formatCurrency, cn } from '../lib/utils';
-import { getSalesTrends, getProductPerformance, getStaffKPIs } from '../data/mockData';
+import { getSalesTrends, getProductPerformance, getStaffKPIs, getKpis } from '../data/mockData';
 import { motion } from 'motion/react';
 
 interface DashboardProps {
@@ -17,6 +17,7 @@ const Dashboard: React.FC<DashboardProps> = ({ branch }) => {
   const salesData = getSalesTrends(branch);
   const pieData = getProductPerformance(branch);
   const staffData = getStaffKPIs(branch);
+  const dynamicKpis = getKpis(branch);
   
   const COLORS = ['#ffde3b', '#000000', '#333333', '#666666', '#999999'];
 
@@ -25,10 +26,10 @@ const Dashboard: React.FC<DashboardProps> = ({ branch }) => {
   }, []);
 
   const kpis = [
-    { title: "Today's Sales", value: formatCurrency(12450.50), icon: Wallet, trend: "+12%", up: true, color: "blue" },
-    { title: "Low Stock Items", value: "3", icon: AlertTriangle, trend: "Requires attention", up: false, color: "orange" },
-    { title: "Active Staff", value: branch === 'All' ? "3" : "2", icon: Users, trend: "Currently on shift", up: true, color: "teal" },
-    { title: "Total Revenue (MTD)", value: formatCurrency(352400.00), icon: TrendingUp, trend: "+8.4%", up: true, color: "green" },
+    { title: "Today's Sales", value: formatCurrency(dynamicKpis.todaySales || 0), icon: Wallet, trend: "+12%", up: true, color: "blue" },
+    { title: "Low Stock Items", value: dynamicKpis.lowStockCount.toString(), icon: AlertTriangle, trend: "Requires attention", up: false, color: "orange" },
+    { title: "Active Staff", value: dynamicKpis.activeStaffCount.toString(), icon: Users, trend: "Currently on shift", up: true, color: "teal" },
+    { title: "Total Revenue (MTD)", value: formatCurrency(dynamicKpis.totalRevenueMTD || 0), icon: TrendingUp, trend: "+8.4%", up: true, color: "green" },
   ];
 
   return (

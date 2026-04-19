@@ -76,6 +76,18 @@ export interface AppNotification {
   read: boolean;
 }
 
+export interface InventoryRequest {
+  id: string;
+  itemId: string;
+  itemName: string;
+  quantity: number;
+  unit: string;
+  branch: Exclude<Branch, 'All'>;
+  staffName: string;
+  status: 'pending' | 'approved' | 'declined';
+  time: string;
+}
+
 export interface SalesKPI {
   todaySales: number;
   lowStockCount: number;

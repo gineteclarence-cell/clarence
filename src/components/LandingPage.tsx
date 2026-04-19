@@ -69,7 +69,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     // Simulate API call for portal access
     setTimeout(() => {
       const isValidCode = staffList.some(s => s.accessCode === staffPass);
-      if (isValidCode || staffPass === 'mabistaff') {
+      if (isValidCode) {
         setView('login-staff');
       } else {
         setAuthError('Invalid Access Code. Please contact your manager.');
