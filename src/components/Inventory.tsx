@@ -107,23 +107,23 @@ const Inventory: React.FC<{ isOffline: boolean; branch: Branch }> = ({ isOffline
       </AnimatePresence>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className="flex-1 space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="relative w-72">
+        <div className="flex-1 space-y-6 min-w-0">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div className="relative w-full md:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input 
                 type="text" 
                 placeholder="Search items..." 
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full pl-10 pr-4 py-3 md:py-2 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 self-end md:self-auto">
               <button 
                 onClick={handleSync}
                 className={cn(
-                  "p-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all",
+                  "p-3 md:p-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all",
                   isRefreshing && "animate-spin"
                 )}
               >
@@ -145,9 +145,10 @@ const Inventory: React.FC<{ isOffline: boolean; branch: Branch }> = ({ isOffline
                 </p>
               </div>
             </div>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-gray-50/50">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left min-w-[700px] lg:min-w-0">
+                <thead>
+                  <tr className="bg-gray-50/50">
                   <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Item Name</th>
                   <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
                   <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Stock Level</th>
@@ -201,6 +202,7 @@ const Inventory: React.FC<{ isOffline: boolean; branch: Branch }> = ({ isOffline
               </tbody>
             </table>
           </div>
+        </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 card-shadow overflow-hidden">
             <div className="p-6 border-b border-gray-50 bg-white flex justify-between items-center">

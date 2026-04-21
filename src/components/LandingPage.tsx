@@ -165,15 +165,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                   ISO/IEC 25010 CERTIFIED SYSTEM
                 </div>
                 
-                <h1 className="text-6xl sm:text-8xl md:text-[120px] font-black text-black leading-[0.8] tracking-tighter">
+                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[120px] font-black text-black leading-[0.9] md:leading-[0.8] tracking-tighter">
                   Sip. Bite.<br />
-                  <span className="relative inline-block mt-2">
+                  <span className="relative inline-block mt-1 sm:mt-2">
                     <span className="absolute left-0 bottom-1 w-full h-[60%] bg-primary z-0"></span>
                     <span className="relative z-10">Monitor.</span>
                   </span>
                 </h1>
                 
-                <p className="text-xl text-gray-500 font-bold max-w-lg leading-relaxed">
+                <p className="text-lg md:text-xl text-gray-500 font-bold max-w-lg leading-relaxed">
                   Centralized oversight for <span className="text-black font-black">Mabi Sip & Bites</span>. Real-time monitoring across North and South branches simplified.
                 </p>
                 
@@ -259,7 +259,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     if (view === 'login-staff') setView('staff-auth');
                     else setView('landing');
                   }}
-                  className="absolute -top-12 left-0 flex items-center gap-2 text-sm font-bold text-black/40 hover:text-black transition-colors"
+                  className="absolute -top-10 sm:-top-12 left-0 flex items-center gap-2 text-[10px] sm:text-sm font-black text-white/60 hover:text-white transition-colors uppercase tracking-widest"
                 >
                   ← {view === 'login-staff' ? 'Back' : 'Back to home'}
                 </button>

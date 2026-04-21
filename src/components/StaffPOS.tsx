@@ -34,7 +34,8 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
     const savedSales = localStorage.getItem(`sales_${user.id}`);
     if (savedSales) setPersonalTransactions(JSON.parse(savedSales));
 
-    const savedMenu = localStorage.getItem('custom_menu_items');
+    const menuKey = `mabi_pos_menu_${user.branch}`;
+    const savedMenu = localStorage.getItem(menuKey);
     const customItems = savedMenu ? JSON.parse(savedMenu) : [];
     setMenuItems([...INITIAL_MENU_ITEMS, ...customItems]);
 
@@ -69,14 +70,15 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
       name: newProduct.name,
       price: parseFloat(newProduct.price),
       category: newProduct.category,
-      image: newProduct.image || `https://picsum.photos/seed/${newProduct.name}/200/200`
+      image: newProduct.image || `https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=400&q=80`
     };
 
-    const savedMenu = localStorage.getItem('custom_menu_items');
+    const menuKey = `mabi_pos_menu_${user.branch}`;
+    const savedMenu = localStorage.getItem(menuKey);
     const customItems = savedMenu ? JSON.parse(savedMenu) : [];
     const updatedCustom = [...customItems, product];
     
-    localStorage.setItem('custom_menu_items', JSON.stringify(updatedCustom));
+    localStorage.setItem(menuKey, JSON.stringify(updatedCustom));
     setMenuItems([...INITIAL_MENU_ITEMS, ...updatedCustom]);
     setNewProduct({ name: '', price: '', category: 'Beverage', image: '' });
     setView('pos');
@@ -143,7 +145,7 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
   const categories = ['All', ...new Set(menuItems.map(i => i.category))];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)] space-y-6">
+    <div className="flex flex-col h-[calc(100vh-14rem)] md:h-[calc(100vh-12rem)] space-y-4 md:space-y-6">
       {/* Mobile Cart Trigger */}
       {view === 'pos' && cart.length > 0 && (
         <div className="lg:hidden fixed bottom-6 right-6 z-50">
@@ -193,23 +195,29 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto min-h-0 space-y-4 mb-8 pr-2">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-4 mb-8 pr-2">
                 {cart.map((item) => (
-                  <div key={item.menuItem.id} className="flex items-center gap-4 bg-gray-50/50 p-4 rounded-2xl group">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
+                  <div key={item.menuItem.id} className="flex items-center gap-3 bg-gray-50/50 p-3 rounded-2xl group">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
                       <img src={item.menuItem.image} alt="" className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-gray-900 truncate">{item.menuItem.name}</p>
-                      <p className="text-xs font-black text-accent mt-0.5">₱{(item.menuItem.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-bold text-xs md:text-sm text-gray-900 truncate">{item.menuItem.name}</p>
+                      <p className="text-[10px] md:text-xs font-black text-accent mt-0.5">₱{(item.menuItem.price * item.quantity).toFixed(2)}</p>
                     </div>
-                    <div className="flex items-center gap-3 bg-white p-1 rounded-lg border border-gray-100">
-                      <button onClick={() => removeFromCart(item.menuItem.id)} className="w-6 h-6 flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
-                        <Minus className="w-3 h-3" />
+                    <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-100">
+                      <button 
+                        onClick={() => removeFromCart(item.menuItem.id)} 
+                        className="w-8 h-8 flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
                       </button>
                       <span className="font-black text-xs min-w-[1rem] text-center">{item.quantity}</span>
-                      <button onClick={() => addToCart(item.menuItem)} className="w-6 h-6 flex items-center justify-center hover:bg-green-50 text-gray-400 hover:text-green-500 transition-colors">
-                        <Plus className="w-3 h-3" />
+                      <button 
+                        onClick={() => addToCart(item.menuItem)} 
+                        className="w-8 h-8 flex items-center justify-center hover:bg-green-50 text-gray-400 hover:text-green-500 transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -237,11 +245,11 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
       </AnimatePresence>
 
       {/* Tab Switcher */}
-      <div className="flex flex-wrap gap-4 border-b border-gray-100 pb-4">
+      <div className="flex flex-wrap gap-2 md:gap-4 border-b border-gray-100 pb-4">
         <button 
           onClick={() => setView('pos')}
           className={cn(
-            "px-6 py-2 rounded-xl text-sm font-black transition-all",
+            "flex-1 md:flex-none px-4 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black transition-all",
             view === 'pos' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:text-primary"
           )}
         >
@@ -250,7 +258,7 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
         <button 
           onClick={() => setView('history')}
           className={cn(
-            "px-6 py-2 rounded-xl text-sm font-black transition-all",
+            "flex-1 md:flex-none px-4 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black transition-all",
             view === 'history' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:text-primary"
           )}
         >
@@ -259,7 +267,7 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
         <button 
           onClick={() => setView('manage')}
           className={cn(
-            "px-6 py-2 rounded-xl text-sm font-black transition-all border border-transparent",
+            "w-full md:w-auto px-4 md:px-6 py-2 rounded-xl text-[10px] md:text-sm font-black transition-all border border-transparent",
             view === 'manage' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-gray-400 hover:text-accent border-accent/10"
           )}
         >
@@ -299,8 +307,8 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2">
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="flex-1 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                 {filteredItems.map(item => (
                   <motion.div
                     key={item.id}
@@ -308,9 +316,9 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => addToCart(item)}
-                    className="bg-white p-4 rounded-3xl border border-gray-100 card-shadow cursor-pointer group hover:border-accent/30 transition-all flex flex-col items-center text-center"
+                    className="bg-white p-3 md:p-4 rounded-3xl border border-gray-100 card-shadow cursor-pointer group hover:border-accent/30 transition-all flex flex-col items-center text-center"
                   >
-                    <div className="w-full aspect-square bg-gray-50 rounded-2xl mb-4 overflow-hidden relative border border-gray-50">
+                    <div className="w-full aspect-square bg-gray-50 rounded-2xl mb-2 md:mb-4 overflow-hidden relative border border-gray-50">
                       <img 
                         src={item.image} 
                         alt={item.name} 
@@ -319,8 +327,8 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                     </div>
-                    <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">{item.name}</h4>
-                    <p className="text-accent font-black text-sm">₱{item.price.toFixed(2)}</p>
+                    <h4 className="font-bold text-gray-900 text-xs md:text-sm mb-0.5 md:mb-1 line-clamp-1">{item.name}</h4>
+                    <p className="text-accent font-black text-xs md:text-sm">₱{item.price.toFixed(2)}</p>
                   </motion.div>
                 ))}
               </div>

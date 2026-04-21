@@ -37,20 +37,20 @@ export const NOTIFICATIONS: AppNotification[] = [
 ];
 
 export const MENU_ITEMS: MenuItem[] = [
-  { id: 'm1', name: 'Classic Milk Tea', price: 85, category: 'Beverage', image: 'https://picsum.photos/seed/milktea/200/200' },
-  { id: 'm2', name: 'Hokkaido Milk Tea', price: 95, category: 'Beverage', image: 'https://picsum.photos/seed/hokkaido/200/200' },
-  { id: 'm3', name: 'Okinawa Milk Tea', price: 95, category: 'Beverage', image: 'https://picsum.photos/seed/okinawa/200/200' },
-  { id: 'm4', name: 'Premium Fries', price: 55, category: 'Snacks', image: 'https://picsum.photos/seed/fries/200/200' },
-  { id: 'm5', name: 'Beef Siomai (4pcs)', price: 45, category: 'Snacks', image: 'https://picsum.photos/seed/siomai/200/200' },
-  { id: 'm6', name: 'Burger Bites', price: 65, category: 'Snacks', image: 'https://picsum.photos/seed/burger/200/200' },
+  { id: 'm1', name: 'Classic Milk Tea', price: 85, category: 'Beverage', image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=200&q=80' },
+  { id: 'm2', name: 'Hokkaido Milk Tea', price: 95, category: 'Beverage', image: 'https://images.unsplash.com/photo-1558223611-37d4f971b312?auto=format&fit=crop&w=200&q=80' },
+  { id: 'm3', name: 'Okinawa Milk Tea', price: 95, category: 'Beverage', image: 'https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=200&q=80' },
+  { id: 'm4', name: 'Premium Fries', price: 55, category: 'Snacks', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=80' },
+  { id: 'm5', name: 'Beef Siomai (4pcs)', price: 45, category: 'Snacks', image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=200&q=80' },
+  { id: 'm6', name: 'Burger Bites', price: 65, category: 'Snacks', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80' },
 ];
 
 export const INVENTORY: InventoryItem[] = [
-  { id: '1', name: 'Milk Tea', stock: 15, minStock: 20, unit: 'Liters', category: 'Beverage' },
-  { id: '2', name: 'Fries', stock: 45, minStock: 10, unit: 'Kg', category: 'Snacks' },
-  { id: '3', name: 'Siomai', stock: 8, minStock: 15, unit: 'Packs', category: 'Snacks' },
-  { id: '4', name: 'Water', stock: 100, minStock: 20, unit: 'Bottles', category: 'Beverage' },
-  { id: '5', name: 'Juice', stock: 5, minStock: 10, unit: 'Liters', category: 'Beverage' },
+  { id: '1', name: 'Milk Tea', stock: 15, minStock: 5, unit: 'Liters', category: 'Beverage' },
+  { id: '2', name: 'Fries', stock: 45, minStock: 5, unit: 'Kg', category: 'Snacks' },
+  { id: '3', name: 'Siomai', stock: 8, minStock: 5, unit: 'Packs', category: 'Snacks' },
+  { id: '4', name: 'Water', stock: 100, minStock: 5, unit: 'Bottles', category: 'Beverage' },
+  { id: '5', name: 'Juice', stock: 5, minStock: 2, unit: 'Liters', category: 'Beverage' },
 ];
 
 export const STAFF: StaffMember[] = [

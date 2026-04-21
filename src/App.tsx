@@ -113,7 +113,7 @@ export default function App() {
       />
       
       <main className={cn(
-        "flex-1 min-h-screen flex flex-col transition-all duration-300",
+        "flex-1 min-h-screen flex flex-col transition-all duration-300 w-full overflow-x-hidden",
         "lg:ml-64"
       )}>
         <TopBar 
@@ -125,25 +125,28 @@ export default function App() {
           onMenuClick={() => setSidebarOpen(true)}
         />
         
-        <div className="p-4 lg:p-8 flex-1">
+        <div className="p-4 md:p-6 lg:p-8 flex-1 w-full max-w-[100vw]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab + selectedBranch}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.2 }}
+              className="w-full"
             >
-              <div className="mb-8">
-                <h2 className="text-3xl font-black text-gray-900 tracking-tight capitalize">
+              <div className="mb-6 lg:mb-8">
+                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight capitalize">
                   {activeTab.replace('-', ' ')}
                 </h2>
-                <p className="text-gray-500 font-medium mt-1">
+                <p className="text-xs md:text-sm text-gray-500 font-medium mt-1">
                   Mabi Sip & Bites Centralized Monitoring System
                 </p>
               </div>
               
-              {renderContent()}
+              <div className="w-full">
+                {renderContent()}
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>

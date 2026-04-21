@@ -65,7 +65,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ user, isOffline, onTogg
     setSalesData(trends);
 
     // Inventory Data
-    const savedInv = localStorage.getItem('mabi_inventory');
+    const invKey = `mabi_inventory_${user.branch}`;
+    const savedInv = localStorage.getItem(invKey);
     const inventory: InventoryItem[] = savedInv ? JSON.parse(savedInv) : INITIAL_INVENTORY;
     setInventoryStats(inventory.map(i => ({
       name: i.name,
@@ -75,7 +76,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ user, isOffline, onTogg
     })));
 
     // Inventory Logs
-    const savedInvLogs = localStorage.getItem('mabi_inventory_logs');
+    const logsKey = `mabi_inventory_logs_${user.branch}`;
+    const savedInvLogs = localStorage.getItem(logsKey);
     if (savedInvLogs) {
       const allInvLogs: InventoryLog[] = JSON.parse(savedInvLogs);
       setInventoryLogs(allInvLogs.filter(l => l.branch === user.branch));
@@ -219,36 +221,39 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ user, isOffline, onTogg
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* KPI Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { label: 'Total Shifts', value: stats.shifts, icon: Calendar, color: 'blue' },
-              { label: 'Hours Worked', value: stats.hours, icon: Clock, color: 'teal' },
-              { label: 'Tasks Done', value: stats.tasks, icon: FileText, color: 'orange' },
-            ].map((stat, i) => (
-              <div 
-                key={i}
-                className="bg-white p-6 rounded-3xl border border-gray-100 card-shadow group hover:border-primary/20 transition-all"
-              >
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="p-3 bg-gray-50 rounded-xl group-hover:bg-primary/5 transition-colors">
-                    <stat.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                </div>
-                <h3 className="text-3xl font-black text-gray-900">{stat.value}</h3>
+      {/* KPI Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+        {[
+          { label: 'Total Shifts', value: stats.shifts, icon: Calendar, color: 'blue' },
+          { label: 'Hours', value: stats.hours, icon: Clock, color: 'teal' },
+          { label: 'Tasks', value: stats.tasks, icon: FileText, color: 'orange' },
+        ].map((stat, i) => (
+          <div 
+            key={i}
+            className={cn(
+              "bg-white p-4 md:p-6 rounded-3xl border border-gray-100 card-shadow group hover:border-primary/20 transition-all",
+              i === 2 && "col-span-2 md:col-span-1"
+            )}
+          >
+            <div className="flex items-center gap-3 md:gap-4 mb-2 md:mb-3">
+              <div className="p-2 md:p-3 bg-gray-50 rounded-xl group-hover:bg-primary/5 transition-colors">
+                <stat.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
               </div>
-            ))}
+              <p className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-black text-gray-900">{stat.value}</h3>
           </div>
+        ))}
+      </div>
 
           {/* Charts Summary Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Sales Chart */}
-            <div className="bg-white p-8 rounded-[2rem] border border-gray-100 card-shadow h-[400px] flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6 text-primary" />
-                  Weekly Sales Trend
+            <div className="bg-white p-4 md:p-8 rounded-[2rem] border border-gray-100 card-shadow h-[300px] md:h-[400px] flex flex-col">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h3 className="text-lg md:text-xl font-black text-gray-900 flex items-center gap-3">
+                  <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                  Sales Trend
                 </h3>
               </div>
               <div className="flex-1">
@@ -271,10 +276,10 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ user, isOffline, onTogg
             </div>
 
             {/* Inventory Chart */}
-            <div className="bg-white p-8 rounded-[2rem] border border-gray-100 card-shadow h-[400px] flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
-                  <BarChart3 className="w-6 h-6 text-accent" />
+            <div className="bg-white p-4 md:p-8 rounded-[2rem] border border-gray-100 card-shadow h-[300px] md:h-[400px] flex flex-col">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h3 className="text-lg md:text-xl font-black text-gray-900 flex items-center gap-3">
+                  <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-accent" />
                   Stock Levels
                 </h3>
               </div>
@@ -297,23 +302,23 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ user, isOffline, onTogg
           </div>
 
           {/* Transaction Records Section */}
-          <div className="bg-white rounded-[2.5rem] border border-gray-100 card-shadow overflow-hidden">
-            <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gray-50/30">
+          <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 card-shadow overflow-hidden">
+            <div className="p-5 md:p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 bg-gray-50/30">
               <div>
-                <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                  <History className="w-7 h-7 text-primary" />
-                  Transaction Records
+                <h3 className="text-lg md:text-2xl font-black text-gray-900 flex items-center gap-2 md:gap-3">
+                  <History className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+                  Transactions
                 </h3>
-                <p className="text-sm text-gray-400 font-medium mt-1 uppercase tracking-tight">Real-time audit log for {user.branch}</p>
+                <p className="text-[10px] md:text-sm text-gray-400 font-medium mt-1 uppercase tracking-tight">Audit log for {user.branch}</p>
               </div>
               
-              <div className="flex bg-white p-1.5 rounded-2xl border border-gray-100">
+              <div className="flex bg-white p-1 rounded-xl border border-gray-100">
                 {['Sales', 'Inventory'].map((type) => (
                   <button
                     key={type}
                     onClick={() => setRecordType(type as any)}
                     className={cn(
-                      "px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                      "flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
                       recordType === type 
                         ? "bg-primary text-white shadow-lg shadow-primary/20" 
                         : "text-gray-400 hover:text-primary"
