@@ -61,28 +61,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     }, 1500);
   };
 
-  const handleStaffAuth = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setAuthError('');
-    
-    // Simulate API call for portal access
-    setTimeout(() => {
-      const isValidCode = staffList.some(s => s.accessCode === staffPass);
-      if (isValidCode) {
-        setView('login-staff');
-      } else {
-        setAuthError('Invalid Access Code. Please contact your manager.');
-      }
-      setLoading(false);
-    }, 800);
-  };
-
   const handleStaffLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStaffId) return;
-    setLoading(true);
+    if (!selectedStaffId) {
+      setAuthError('Paki-pili ang iyong pangalan bago mag-sign in.');
+      return;
+    }
+    setAuthError('');
+    
     const staff = staffList.find(s => s.id === selectedStaffId);
+    if (!staff) return;
+
+    if (staff.accessCode !== staffPass) {
+      setAuthError(`Maling access code para kay ${staff.name}. Mangyaring subukan muli.`);
+      return;
+    }
+
+    setLoading(true);
     setTimeout(() => {
       onLogin({
         id: staff?.id,
@@ -94,6 +89,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
       setLoading(false);
     }, 1000);
   };
+
 
   const fillDemo = () => {
     // Owner demo fill is implicit since the fields are default in UI
@@ -256,12 +252,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
               <div className="max-w-md w-full relative">
                 <button 
                   onClick={() => {
-                    if (view === 'login-staff') setView('staff-auth');
-                    else setView('landing');
+                    setSelectedStaffId('');
+                    setStaffPass('');
+                    setAuthError('');
+                    setView('landing');
                   }}
                   className="absolute -top-10 sm:-top-12 left-0 flex items-center gap-2 text-[10px] sm:text-sm font-black text-white/60 hover:text-white transition-colors uppercase tracking-widest"
                 >
-                  ← {view === 'login-staff' ? 'Back' : 'Back to home'}
+                  ← Back to home
                 </button>
                 
                 <div className="bg-[#2c2a11]/40 backdrop-blur-3xl p-6 sm:p-12 rounded-[2rem] sm:rounded-[3rem] border border-white/5 shadow-2xl flex flex-col pt-16 sm:pt-20">
@@ -338,39 +336,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                       </div>
                     </form>
                   ) : view === 'staff-auth' ? (
-                    <form onSubmit={handleStaffAuth} className="space-y-8">
-                      <div className="space-y-2">
-                        <label className="text-[10px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">Portal Access Code</label>
-                        <input 
-                          type="password" 
-                          required
-                          value={staffPass}
-                          onChange={(e) => setStaffPass(e.target.value)}
-                          placeholder="........" 
-                          className="w-full px-5 sm:px-6 py-3.5 sm:py-4 bg-white rounded-xl border border-gray-100 outline-none transition-all font-black text-gray-900 text-center tracking-[0.5em] placeholder:tracking-normal placeholder:font-medium placeholder:text-gray-300 shadow-sm"
-                        />
-                        {authError && (
-                          <motion.p 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
-                            className="text-[10px] text-red-500 font-bold text-center mt-2"
-                          >
-                            {authError}
-                          </motion.p>
-                        )}
-                      </div>
-
-                      <button 
-                        type="submit"
-                        disabled={loading || !staffPass}
-                        className="w-full py-4 sm:py-5 bg-primary text-black rounded-xl font-black text-base sm:text-lg hover:brightness-110 shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        {loading ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : 'SIGN IN'}
-                      </button>
-                    </form>
-                  ) : view === 'login-staff' ? (
-                    <form onSubmit={handleStaffLogin} className="space-y-6">
+                    <form onSubmit={handleStaffLogin} className="space-y-6 text-left">
                       <div className="space-y-4">
+                        {/* 1. Branch Selector */}
                         <div className="space-y-2">
                           <label className="text-[10px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">Select Branch</label>
                           <div className="grid grid-cols-2 gap-3">
@@ -378,11 +346,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                               <button
                                 key={b}
                                 type="button"
-                                onClick={() => setSelectedBranch(b as Branch)}
+                                onClick={() => {
+                                  setSelectedBranch(b as Branch);
+                                  setSelectedStaffId('');
+                                  setStaffPass('');
+                                  setAuthError('');
+                                }}
                                 className={cn(
-                                  "py-3 rounded-xl border-2 transition-all font-bold text-sm",
+                                  "py-3 rounded-xl border-2 transition-all font-black text-xs uppercase tracking-wider",
                                   selectedBranch === b 
-                                    ? "border-primary bg-primary text-black shadow-md" 
+                                    ? "border-primary bg-primary text-black shadow-md shadow-primary/10" 
                                     : "border-white/5 bg-white/5 text-white/40 hover:border-white/10"
                                 )}
                               >
@@ -392,31 +365,90 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                           </div>
                         </div>
 
+                        {/* 2. Staff Names List */}
                         <div className="space-y-2">
-                          <label className="text-[10px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">Staff Member</label>
-                          <div className="relative">
-                            <select 
-                              required
-                              value={selectedStaffId}
-                              onChange={(e) => setSelectedStaffId(e.target.value)}
-                              className="w-full px-4 py-4 bg-white rounded-xl border border-gray-100 outline-none transition-all font-medium text-gray-900 appearance-none cursor-pointer"
-                            >
-                              <option value="" disabled>Select your name...</option>
-                              {staffList.filter(s => s.branch === selectedBranch).map(s => (
-                                <option key={s.id} value={s.id}>{s.name}</option>
-                              ))}
-                            </select>
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                          <label className="text-[10px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">Select Your Name</label>
+                          <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                            {staffList.filter(s => s.branch === selectedBranch).map(s => {
+                              const isSelected = selectedStaffId === s.id;
+                              return (
+                                <button
+                                  key={s.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedStaffId(s.id);
+                                    setStaffPass('');
+                                    setAuthError('');
+                                  }}
+                                  className={cn(
+                                    "flex items-center justify-between px-5 py-3 rounded-xl border text-left transition-all font-medium",
+                                    isSelected 
+                                      ? "border-primary bg-primary/10 text-primary font-bold shadow-sm" 
+                                      : "border-white/5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className={cn(
+                                      "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black",
+                                      isSelected ? "bg-primary text-black" : "bg-white/10 text-white/60"
+                                    )}>
+                                      {s.name.charAt(0)}
+                                    </div>
+                                    <span className="text-sm">{s.name}</span>
+                                  </div>
+                                  {isSelected && (
+                                    <span className="w-2 h-2 rounded-full bg-primary" />
+                                  )}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
+
+                        {/* 3. Access Code Prompt */}
+                        <AnimatePresence>
+                          {selectedStaffId && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="space-y-2 pt-2"
+                            >
+                              <label className="text-[10px] sm:text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">
+                                Enter your Access Code
+                              </label>
+                              <input 
+                                type="password" 
+                                required
+                                value={staffPass}
+                                onChange={(e) => {
+                                  setStaffPass(e.target.value);
+                                  setAuthError('');
+                                }}
+                                placeholder="I-type ang iyong access code..." 
+                                className="w-full px-5 py-3.5 bg-white rounded-xl border border-gray-100 outline-none transition-all font-black text-gray-900 text-center tracking-[0.4em] placeholder:tracking-normal placeholder:font-bold placeholder:text-gray-400 shadow-sm focus:ring-2 focus:ring-primary/20"
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {authError && (
+                          <motion.p 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            className="text-xs text-red-400 font-bold text-center mt-2 bg-red-500/10 py-2.5 px-4 rounded-xl border border-red-500/20"
+                          >
+                            {authError}
+                          </motion.p>
+                        )}
                       </div>
 
                       <button 
                         type="submit"
-                        disabled={loading || !selectedStaffId}
-                        className="w-full py-4 sm:py-5 bg-primary text-black rounded-xl font-black text-base sm:text-lg hover:brightness-110 shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        disabled={loading || !selectedStaffId || !staffPass}
+                        className="w-full py-4 bg-primary text-black rounded-xl font-black text-sm uppercase tracking-wider hover:brightness-110 shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                       >
-                        {loading ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : 'SIGN IN'}
+                        {loading ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : 'SIGN IN TO PORTAL'}
                       </button>
                     </form>
                   ) : (

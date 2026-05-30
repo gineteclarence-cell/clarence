@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { InventoryItem, User, InventoryLog, InventoryRequest, MenuItem } from '../types';
-import { Package, AlertCircle, CheckCircle2, RefreshCw, Search, Plus, Minus, ArrowRight, ClipboardList, Send, X, Info, Camera, Image as ImageIcon } from 'lucide-react';
+import { InventoryItem, User, InventoryLog, MenuItem } from '../types';
+import { Package, AlertCircle, CheckCircle2, RefreshCw, Search, Plus, Minus, ArrowRight, X, Info } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { INVENTORY as INITIAL_INVENTORY, MOCK_REQUESTS } from '../data/mockData';
+import { INVENTORY as INITIAL_INVENTORY } from '../data/mockData';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface StaffInventoryProps {
@@ -14,10 +14,6 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'All' | 'Low Stock' | 'In Stock'>('All');
   const [updating, setUpdating] = useState<string | null>(null);
-  const [isRequesting, setIsRequesting] = useState<InventoryItem | null>(null);
-  const [requestItemSearch, setRequestItemSearch] = useState('');
-  const [requestQty, setRequestQty] = useState(1);
-  const [pendingRequests, setPendingRequests] = useState<InventoryRequest[]>([]);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -30,7 +26,6 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
 
   useEffect(() => {
     const invKey = `mabi_inventory_${user.branch}`;
-    const reqKey = `mabi_inventory_requests_${user.branch}`;
     
     const saved = localStorage.getItem(invKey);
     if (saved) {
@@ -40,15 +35,7 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
       localStorage.setItem(invKey, JSON.stringify(INITIAL_INVENTORY));
     }
 
-    const savedRequests = localStorage.getItem(reqKey);
-    if (savedRequests) {
-      setPendingRequests(JSON.parse(savedRequests));
-    }
-
     const handleStorage = () => {
-      const updatedRequests = localStorage.getItem(reqKey);
-      if (updatedRequests) setPendingRequests(JSON.parse(updatedRequests));
-      
       const updatedInv = localStorage.getItem(invKey);
       if (updatedInv) setItems(JSON.parse(updatedInv));
     };
@@ -97,34 +84,6 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
     localStorage.setItem(logsKey, JSON.stringify([log, ...logs].slice(0, 100)));
   };
 
-  const handleCreateRequest = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isRequesting) return;
-
-    const newRequest: InventoryRequest = {
-      id: `REQ-${Date.now()}`,
-      itemId: isRequesting.id,
-      itemName: isRequesting.name,
-      quantity: requestQty,
-      unit: isRequesting.unit,
-      branch: user.branch as any,
-      staffName: user.name,
-      status: 'pending',
-      time: new Date().toISOString()
-    };
-
-    const reqKey = `mabi_inventory_requests_${user.branch}`;
-    const savedRequests = localStorage.getItem(reqKey);
-    const allRequests: InventoryRequest[] = savedRequests ? JSON.parse(savedRequests) : MOCK_REQUESTS;
-    const updated = [newRequest, ...allRequests];
-    localStorage.setItem(reqKey, JSON.stringify(updated));
-    setPendingRequests(updated);
-    setIsRequesting(null);
-    setRequestQty(1);
-    
-    // alert("Reorder request sent to owner for approval!");
-  };
-
   const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProduct.name || newProduct.price <= 0) return;
@@ -170,130 +129,6 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
 
   return (
     <div className="flex flex-col h-full space-y-8">
-      <AnimatePresence>
-        {isRequesting && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsRequesting(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-8"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-gray-900 uppercase italic">Reorder Request</h3>
-                <button 
-                  onClick={() => setIsRequesting(null)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateRequest} className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Select Item to Stock</label>
-                    <div className="relative">
-                      {isRequesting.id !== 'new' ? (
-                        <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex justify-between items-center group">
-                          <div>
-                            <p className="font-bold text-gray-900">{isRequesting.name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase">Current: {isRequesting.stock} {isRequesting.unit}</p>
-                          </div>
-                          <button 
-                            type="button"
-                            onClick={() => setIsRequesting({ id: 'new', name: '', stock: 0, minStock: 0, unit: 'units', category: '' })}
-                            className="text-[10px] font-black text-primary hover:underline"
-                          >
-                            CHANGE
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input 
-                              type="text"
-                              placeholder="Search item name..."
-                              value={requestItemSearch}
-                              onChange={(e) => setRequestItemSearch(e.target.value)}
-                              className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl border border-gray-100 outline-none font-bold text-sm"
-                            />
-                          </div>
-                          <div className="max-h-40 overflow-y-auto border border-gray-100 rounded-xl divide-y divide-gray-50 bg-white shadow-inner">
-                            {items.filter(it => it.name.toLowerCase().includes(requestItemSearch.toLowerCase())).map(it => (
-                              <button
-                                key={it.id}
-                                type="button"
-                                onClick={() => {
-                                  setIsRequesting(it);
-                                  setRequestItemSearch('');
-                                }}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 flex justify-between items-center transition-colors"
-                              >
-                                <div>
-                                  <p className="text-sm font-bold text-gray-900">{it.name}</p>
-                                  <p className="text-[10px] text-gray-400 font-black uppercase">{it.category}</p>
-                                </div>
-                                <span className={cn(
-                                  "text-[10px] font-black px-2 py-0.5 rounded-lg",
-                                  it.stock <= it.minStock ? "bg-red-50 text-red-600" : "bg-teal-50 text-teal-600"
-                                )}>
-                                  {it.stock} {it.unit}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Quantity to Reorder</label>
-                    <div className="flex items-center gap-4">
-                      <button 
-                        type="button"
-                        onClick={() => setRequestQty(Math.max(1, requestQty - 1))}
-                        className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-colors border border-gray-100"
-                      >
-                        <Minus className="w-5 h-5" />
-                      </button>
-                      <div className="flex-1 text-center font-mono">
-                        <span className="text-3xl font-black text-black">{requestQty}</span>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase">{isRequesting.id !== 'new' ? isRequesting.unit : 'units'}</p>
-                      </div>
-                      <button 
-                        type="button"
-                        onClick={() => setRequestQty(requestQty + 1)}
-                        className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-colors border border-gray-100"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <button 
-                  type="submit"
-                  disabled={isRequesting.id === 'new'}
-                  className="w-full py-4 bg-black text-primary rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-xl shadow-black/10 disabled:opacity-50 disabled:grayscale"
-                >
-                  <Send className="w-4 h-4" /> SEND REQUEST
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       <AnimatePresence>
         {isAddingProduct && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -379,7 +214,6 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
                     >
                       <option value={2}>2 Units</option>
                       <option value={5}>5 Units</option>
-                      <option value={10}>10 Units</option>
                     </select>
                   </div>
                 </div>
@@ -424,29 +258,7 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <button 
-            onClick={() => {
-              setIsRequesting({ id: 'new', name: '', stock: 0, minStock: 0, unit: 'units', category: '' });
-              setRequestItemSearch('');
-            }}
-            className="group relative overflow-hidden bg-black p-8 rounded-3xl border border-black/20 card-shadow transition-all text-left"
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 transition-opacity">
-              <Send className="w-32 h-32 text-primary transform rotate-12" />
-            </div>
-            <div className="relative z-10 text-primary">
-              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6">
-                <Send className="w-7 h-7" />
-              </div>
-              <h4 className="text-xl font-black text-white mb-2">Request Reorder</h4>
-              <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-[200px]">Send replenishment requests to the owner for low-stock items.</p>
-              <div className="mt-6 flex items-center gap-2 font-black text-xs uppercase tracking-widest text-primary">
-                SUBMIT NEW REQUEST <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </button>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <button 
             onClick={() => setIsAddingProduct(true)}
             className="group relative overflow-hidden bg-white p-8 rounded-3xl border border-gray-100 card-shadow hover:border-accent/40 transition-all text-left md:col-span-2 lg:col-span-1"
@@ -454,7 +266,7 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
               <Plus className="w-32 h-32 text-accent transform -rotate-12" />
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 text-accent">
               <div className="w-14 h-14 bg-accent/5 rounded-2xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
                 <Plus className="w-7 h-7" />
               </div>
@@ -594,13 +406,6 @@ const StaffInventory: React.FC<StaffInventoryProps> = ({ user }) => {
                       className="w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/20 transition-all shadow-sm active:scale-90"
                     >
                       <Plus className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => setIsRequesting(item)}
-                      className="ml-2 w-10 h-10 bg-black text-primary rounded-xl flex items-center justify-center hover:brightness-110 transition-all shadow-sm active:scale-90"
-                      title="Request Reorder"
-                    >
-                      <ClipboardList className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

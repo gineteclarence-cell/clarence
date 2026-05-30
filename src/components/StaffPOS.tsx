@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Transaction, MenuItem } from '../types';
-import { ShoppingCart, Plus, Minus, Trash2, CheckCircle2, Receipt, Coffee, Utensils, Search, History, Settings, Image as ImageIcon, Tag, Coins, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, CheckCircle2, Receipt, Coffee, Utensils, Search, History, Settings, Image as ImageIcon, Tag, Coins, ShoppingBag, AlertCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
@@ -27,7 +27,7 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
   
   // Menu Management
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [newProduct, setNewProduct] = useState({ name: '', price: '', category: 'Beverage', image: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', price: '', category: 'Beverage', initialStock: '10', minStock: 5 });
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
@@ -65,12 +65,13 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
+    const id = `m-custom-${Date.now()}`;
     const product: MenuItem = {
-      id: `m-custom-${Date.now()}`,
+      id: id,
       name: newProduct.name,
       price: parseFloat(newProduct.price),
       category: newProduct.category,
-      image: newProduct.image || `https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=400&q=80`
+      image: `https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=400&q=80`
     };
 
     const menuKey = `mabi_pos_menu_${user.branch}`;
@@ -80,7 +81,22 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
     
     localStorage.setItem(menuKey, JSON.stringify(updatedCustom));
     setMenuItems([...INITIAL_MENU_ITEMS, ...updatedCustom]);
-    setNewProduct({ name: '', price: '', category: 'Beverage', image: '' });
+
+    // Also sync to Inventory
+    const invKey = `mabi_inventory_${user.branch}`;
+    const savedInv = localStorage.getItem(invKey);
+    const inventory = savedInv ? JSON.parse(savedInv) : [];
+    const newInvItem = {
+      id: id,
+      name: newProduct.name,
+      category: newProduct.category,
+      stock: parseInt(newProduct.initialStock) || 0,
+      minStock: newProduct.minStock,
+      unit: 'pcs'
+    };
+    localStorage.setItem(invKey, JSON.stringify([newInvItem, ...inventory]));
+
+    setNewProduct({ name: '', price: '', category: 'Beverage', initialStock: '10', minStock: 5 });
     setView('pos');
   };
 
@@ -528,49 +544,34 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Product Image</label>
-                <div className="flex flex-col gap-4">
-                  <div 
-                    onClick={() => document.getElementById('image-upload')?.click()}
-                    className={cn(
-                      "w-full h-32 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all overflow-hidden relative group",
-                      newProduct.image ? "border-accent/50 bg-accent/5" : "border-gray-200 hover:border-accent/40 bg-gray-50"
-                    )}
-                  >
-                    {newProduct.image ? (
-                      <>
-                        <img src={newProduct.image} className="w-full h-full object-cover" alt="Selected" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Plus className="w-8 h-8 text-white" />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                          isUploading ? "bg-accent text-white animate-spin" : "bg-white text-gray-400"
-                        )}>
-                          <ImageIcon className="w-5 h-5" />
-                        </div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                          {isUploading ? "Reading File..." : "Click to Upload Photo"}
-                        </p>
-                      </>
-                    )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Initial Stock</label>
+                  <div className="relative">
+                    <ShoppingBag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input 
+                      type="number"
+                      required
+                      placeholder="10"
+                      value={newProduct.initialStock}
+                      onChange={(e) => setNewProduct({ ...newProduct, initialStock: e.target.value })}
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-accent/10 focus:border-accent/20 outline-none transition-all font-bold"
+                    />
                   </div>
-                  <input 
-                    id="image-upload"
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                  />
-                  {!newProduct.image && (
-                    <p className="text-[10px] text-gray-400 font-medium italic">
-                      No photo? We'll auto-generate a placeholder based on the product name.
-                    </p>
-                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Low Stock Alert</label>
+                  <div className="relative">
+                    <AlertCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <select 
+                      value={newProduct.minStock}
+                      onChange={(e) => setNewProduct({ ...newProduct, minStock: parseInt(e.target.value) })}
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-accent/10 focus:border-accent/20 outline-none transition-all font-bold appearance-none cursor-pointer"
+                    >
+                      <option value={2}>2 Units</option>
+                      <option value={5}>5 Units</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -578,7 +579,7 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
                 type="submit"
                 className="w-full py-4 bg-accent text-white rounded-2xl font-black text-lg shadow-xl shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
               >
-                CREATE MENU ITEM
+                CREATE PRODUCT
               </button>
             </form>
           </div>
@@ -586,24 +587,26 @@ const StaffPOS: React.FC<StaffPOSProps> = ({ user }) => {
           <div className="bg-white p-8 rounded-3xl border border-gray-100 card-shadow flex flex-col">
             <h3 className="text-xl font-black text-gray-900 mb-8 flex items-center gap-3">
               <ShoppingBag className="w-6 h-6 text-primary" />
-              Live Preview
+              Product Preview
             </h3>
             
             <div className="flex-1 flex flex-col items-center justify-center">
               <div className="w-full max-w-xs bg-gray-50 p-6 rounded-[2.5rem] border border-gray-100 flex flex-col items-center text-center shadow-lg transform rotate-2">
                 <div className="w-full aspect-square bg-white rounded-3xl mb-6 shadow-inner overflow-hidden border border-gray-100">
                   <img 
-                    src={newProduct.image || `https://picsum.photos/seed/${newProduct.name || 'preview'}/200/200`} 
+                    src={`https://picsum.photos/seed/${newProduct.name || 'preview'}/200/200`} 
                     alt="Preview" 
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"
                   />
                 </div>
-                <h4 className="font-black text-gray-900 text-xl mb-2">{newProduct.name || 'Your Menu Item'}</h4>
-                <p className="text-accent font-black text-2xl tracking-tighter">₱{(parseFloat(newProduct.price) || 0).toFixed(2)}</p>
-                <div className="mt-6 px-4 py-1.5 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest">{newProduct.category}</div>
+                <h4 className="font-black text-gray-900 text-xl mb-2">{newProduct.name || 'New Product'}</h4>
+                <p className="text-accent font-black text-2xl tracking-tighter">₱{parseFloat(newProduct.price || '0').toFixed(2)}</p>
+                <div className="mt-4 flex gap-2">
+                   <div className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest">{newProduct.category}</div>
+                   <div className="px-3 py-1 bg-accent/10 text-accent rounded-full text-[10px] font-black uppercase tracking-widest">Stock: {newProduct.initialStock}</div>
+                </div>
               </div>
-              <p className="mt-8 text-xs font-bold text-gray-400 text-center max-w-xs">This is how your product will appear in the Point of Sale grid.</p>
             </div>
           </div>
         </div>
